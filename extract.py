@@ -5,31 +5,31 @@ from send2trash import send2trash
 TODAY = datetime.datetime.now().strftime('%Y_%m_%d')
 
 class Extractor():
-    def __init__(self):
+    def __init__(self, src_folder, des_folder):
         cur_folder = os.path.abspath('.')
-        self.src_folder = os.path.dirname(cur_folder)
-        self.des_folder = os.path.join(cur_folder, TODAY)
+        self.src_folder = src_folder
+        self.des_folder = os.path.join(des_folder, TODAY)
 
-    def extract_7z():
+    def extract_7z(self):
         count = 0
-        while os.path.exists(des_folder):
+        while os.path.exists(self.des_folder):
             count += 1
-            des_folder = os.path.join(cur_folder, TODAY) + '_' + str(count)
+            des_folder = os.path.join(self.des_folder, TODAY) + '_' + str(count)
         else:
-            os.mkdir(des_folder)
+            os.mkdir(self.des_folder)
 
-        print(f'Extract all .7z files in:\n    {source_folder}\nTo:\n    {des_folder}\n-------------------------------------------------------------------\n', flush=True)
+        print(f'Extract all .7z files in:\n    {self.src_folder}\nTo:\n    {self.des_folder}\n-------------------------------------------------------------------\n', flush=True)
 
         extracted_files = []
-        enum = list( enumerate(os.listdir(source_folder)) )
+        enum = list( enumerate(os.listdir(self.src_folder)) )
         for idx, f_name in enum:
             if f_name.endswith('.7z'):
-                abs_f_name = os.path.join(source_folder, f_name)
+                abs_f_name = os.path.join(self.src_folder, f_name)
                 print(f'Extracing file {idx} of {enum[-1][0]}:', flush=True)
                 try:
                     print(f'    {abs_f_name}\n', flush=True)
                     with py7zr.SevenZipFile(abs_f_name, mode='r', password='megamega') as z:
-                        z.extractall(des_folder)
+                        z.extractall(self.des_folder)
                     extracted_files.append(abs_f_name)
                 except:
                     print(f'ERROR: error occured when extracting:\n    {abs_f_name}', flush=True)
@@ -42,8 +42,29 @@ class Extractor():
 
         print('DONE')
 
+def get_src_and_des_path():
+    src_path = input("Please enter the source folder path:\n")
+    # assert os.path.isdir(src_path), f"Can not find the folder: {src_path}"
+    if not os.path.isdir(src_path):
+        print(f"Source folder is not exist or valid")
+        return
+    
+    des_path = input("Please enter the destination folder path:\n")
+    if not os.path.isdir(src_path):
+        print(f"Destination folder is not exist or valid")
+        create_folder = input("Do you want create this folder?[y/n]")
+        if create_folder == 'y':
+            try:
+                os.mkdir(des_path)
+            except Exception as e:
+                print(e)
+                print(f"Error occured when creating folder at:\n{des_path}")
+        else:
+            return
 
+    return (src_path, des_path)
 
 if __name__ == "__main__":
-    pass
-    # extract_7z()
+    src_path, des_path = get_src_and_des_path()
+    extractor = Extractor(src_path, des_path)
+    extractor.extract_7z()
